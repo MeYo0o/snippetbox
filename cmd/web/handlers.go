@@ -22,15 +22,13 @@ func home(app *config.Application) http.HandlerFunc {
 
 		ts, err := template.ParseFiles(files...)
 		if err != nil {
-			app.Logger.Error(err.Error(), "method", r.Method, "uri", r.URL.RequestURI())
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			serverError(app, w, r, err)
 			return
 		}
 
 		err = ts.ExecuteTemplate(w, "base", nil)
 		if err != nil {
-			app.Logger.Error(err.Error(), "method", r.Method, "uri", r.URL.RequestURI())
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			serverError(app, w, r, err)
 		}
 	}
 
@@ -39,7 +37,7 @@ func home(app *config.Application) http.HandlerFunc {
 func snippetView(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil || id < 1 {
-		http.NotFound(w, r)
+		clientError(w, http.StatusNotFound)
 		return
 	}
 

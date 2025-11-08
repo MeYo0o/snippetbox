@@ -1,16 +1,21 @@
 package main
 
 import (
+	"database/sql"
 	"flag"
 	"log/slog"
 	"net/http"
 	"os"
 
 	"github.com/MeYo0o/snippetbox/internal/config"
+	"github.com/MeYo0o/snippetbox/internal/models"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 func main() {
 	addr := flag.String("addr", ":4000", "HTTP network address")
+	dsn := flag.String("dsn", "web:xxxxxxxx@/snippetbox?parseTime=true", "MySQL datasource name")
 	flag.Parse()
 
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
@@ -18,13 +23,36 @@ func main() {
 		// Level:     slog.LevelDebug,
 	}))
 
+	db, err := openDB(*dsn)
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+	defer db.Close()
+
 	app := &config.Application{
-		Logger: logger,
+		Logger:   logger,
+		Snippets: &models.SnippetModel{DB: db},
 	}
 
 	logger.Info("starting server", "addr", *addr)
 
-	err := http.ListenAndServe(*addr, routes(app))
+	err = http.ListenAndServe(*addr, routes(app))
 	logger.Error(err.Error())
 	os.Exit(1)
+}
+
+func openDB(dsn string) (*sql.DB, error) {
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.Ping()
+	if err != nil {
+		db.Close()
+		return nil, err
+	}
+
+	return db, nil
 }

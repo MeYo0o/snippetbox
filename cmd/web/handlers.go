@@ -1,12 +1,14 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"html/template"
 	"net/http"
 	"strconv"
 
 	"github.com/MeYo0o/snippetbox/internal/config"
+	"github.com/MeYo0o/snippetbox/internal/models"
 )
 
 func home(app *config.Application) http.HandlerFunc {
@@ -34,14 +36,27 @@ func home(app *config.Application) http.HandlerFunc {
 
 }
 
-func snippetView(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.PathValue("id"))
-	if err != nil || id < 1 {
-		clientError(w, http.StatusNotFound)
-		return
-	}
+func snippetView(app *config.Application) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.Atoi(r.PathValue("id"))
+		if err != nil || id < 1 {
+			clientError(w, http.StatusNotFound)
+			return
+		}
 
-	fmt.Fprintf(w, "Display a specific snippet with ID %d...", id)
+		snippet, err := app.Snippets.Get(id)
+		if err != nil {
+			if errors.Is(err, models.ErrNoRecord) {
+				clientError(w, http.StatusNotFound)
+
+			} else {
+				serverError(app, w, r, err)
+			}
+			return
+		}
+
+		fmt.Fprintf(w, "%+v", snippet)
+	}
 }
 
 func snippetCreate(w http.ResponseWriter, r *http.Request) {

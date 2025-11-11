@@ -15,7 +15,7 @@ import (
 
 func main() {
 	addr := flag.String("addr", ":4000", "HTTP network address")
-	dsn := flag.String("dsn", "web:xxxxxxxx@/snippetbox?parseTime=true", "MySQL datasource name")
+	dsn := flag.String("dsn", "web:011000@/snippetbox?parseTime=true", "MySQL datasource name")
 	flag.Parse()
 
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{

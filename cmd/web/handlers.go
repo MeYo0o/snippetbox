@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"html/template"
 	"net/http"
 	"strconv"
 
@@ -16,22 +15,32 @@ func home(app *config.Application) http.HandlerFunc {
 
 		w.Header().Add("Server", "Go")
 
-		files := []string{
-			"./ui/html/base.tmpl",
-			"./ui/html/partials/nav.tmpl",
-			"./ui/html/pages/home.tmpl",
-		}
-
-		ts, err := template.ParseFiles(files...)
+		snippets, err := app.Snippets.Latest()
 		if err != nil {
 			serverError(app, w, r, err)
 			return
 		}
 
-		err = ts.ExecuteTemplate(w, "base", nil)
-		if err != nil {
-			serverError(app, w, r, err)
+		for _, snippet := range snippets {
+			fmt.Fprintf(w, "%+v\n", snippet)
 		}
+
+		// files := []string{
+		// 	"./ui/html/base.tmpl",
+		// 	"./ui/html/partials/nav.tmpl",
+		// 	"./ui/html/pages/home.tmpl",
+		// }
+
+		// ts, err := template.ParseFiles(files...)
+		// if err != nil {
+		// 	serverError(app, w, r, err)
+		// 	return
+		// }
+
+		// err = ts.ExecuteTemplate(w, "base", nil)
+		// if err != nil {
+		// 	serverError(app, w, r, err)
+		// }
 	}
 
 }

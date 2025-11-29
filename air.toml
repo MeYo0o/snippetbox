@@ -1,0 +1,46 @@
+# .air.toml
+# Config file for [Air](https://github.com/air-verse/air) in TOML format
+
+root = "."
+tmp_dir = "tmp"
+
+[build]
+  # This command builds the package located in ./cmd/web and places the
+  # resulting binary in the ./tmp directory.
+  cmd = "go build -o ./tmp/main ./cmd/web"
+  # The path to the built binary, relative to the project root.
+  bin = "tmp/main"
+  # Entrypoint used to run the compiled binary.
+  entrypoint = ["./tmp/main"]
+  # Log build output to tmp/air.log
+  log = "air.log"
+  # Watch these filename extensions
+  include_ext = ["go", "tpl", "tmpl", "html"]
+  # Ignore these directories while watching for changes
+  exclude_dir = ["assets", "tmp", "vendor", "testdata", ".git", ".vscode", "node_modules"]
+  # Debounce rapid rebuilds (milliseconds)
+  delay = 1000
+  # Stop running the previous binary when a build error occurs
+  stop_on_error = true
+  # Send an interrupt before killing the process (not supported on Windows)
+  send_interrupt = false
+  # Delay after sending the interrupt signal (milliseconds)
+  kill_delay = 500
+
+[log]
+  time = false
+  main_only = false
+  silent = false
+
+[color]
+  main = "magenta"
+  watcher = "cyan"
+  build = "yellow"
+  runner = "green"
+
+[misc]
+  clean_on_exit = true
+
+[screen]
+  clear_on_rebuild = true
+  keep_scroll = true

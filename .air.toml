@@ -1,0 +1,53 @@
+root = "."
+tmp_dir = "tmp"
+
+[build]
+  cmd = "go build -o ./tmp/main ./cmd/web"
+  bin = "./tmp/main"
+  include_ext = ["go", "html", "css", "js", "tmpl", "tpl"]
+  include_dir = ["cmd", "internal", "ui", "config", "models"]
+  exclude_dir = ["tmp", "vendor", "testdata"]
+  exclude_regex = ["_test\\.go", "_mock\\.go"]
+  delay = 1000
+  stop_on_root = false
+  send_interrupt = false
+  kill_delay = 500
+  rerun = false
+  rerun_delay = 500
+
+[log]
+  time = true
+  main_only = false
+  silent = false
+  prefix = "🚀 "
+
+[color]
+  # Main app colors
+  main = "magenta"
+  watcher = "cyan"
+  build = "yellow"
+  runner = "green"
+  
+  # Log colors
+  log = "white"
+  app = "blue"
+  debug = "yellow"
+  error = "red"
+  warn = "yellow"
+  success = "green"
+
+[misc]
+  clean_on_exit = true
+  full_bin = ""
+
+[screen]
+  clear_on_rebuild = true
+  keep_scroll = true
+  wrap = true
+  reverse = false
+
+# Custom commands (optional)
+[cmd]
+  # You can add pre/post build commands here if needed
+  # pre_build = "echo '🛠️  Building...'"
+  # post_build = "echo '✅ Build complete!'"

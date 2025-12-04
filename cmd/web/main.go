@@ -30,9 +30,16 @@ func main() {
 	}
 	defer db.Close()
 
+	templateCache, err := newTemplateCache()
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+
 	app := &config.Application{
-		Logger:   logger,
-		Snippets: &models.SnippetModel{DB: db},
+		Logger:        logger,
+		Snippets:      &models.SnippetModel{DB: db},
+		TemplateCache: templateCache,
 	}
 
 	logger.Info("starting server", "addr", *addr)

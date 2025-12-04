@@ -20,9 +20,12 @@ func home(app *config.Application) http.HandlerFunc {
 			return
 		}
 
-		render(app, w, r, http.StatusOK, "home.tmpl", templateData{
-			Snippets: snippets,
-		})
+		//* initialize the TemplateData with Current Year
+		data := newTemplateData()
+		//* update the "Snippets" field
+		data.Snippets = snippets
+
+		render(app, w, r, http.StatusOK, "home.tmpl", data)
 
 	}
 
@@ -47,7 +50,12 @@ func snippetView(app *config.Application) http.HandlerFunc {
 			return
 		}
 
-		render(app, w, r, http.StatusOK, "view.tmpl", templateData{Snippet: snippet})
+		//* initialize the TemplateData with Current Year
+		data := newTemplateData()
+		//* update the "Snippet" field
+		data.Snippet = snippet
+
+		render(app, w, r, http.StatusOK, "view.tmpl", data)
 	}
 }
 

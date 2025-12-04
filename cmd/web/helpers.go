@@ -30,15 +30,15 @@ func render(app *config.Application, w http.ResponseWriter, r *http.Request, sta
 		return
 	}
 
-	buffer := new(bytes.Buffer)
+	buf := new(bytes.Buffer)
 
-	err := ts.ExecuteTemplate(buffer, "base", data)
+	err := ts.ExecuteTemplate(buf, "base", data)
 	if err != nil {
 		serverError(app, w, r, err)
 	}
 
 	w.WriteHeader(status)
 
-	buffer.WriteTo(w)
+	buf.WriteTo(w)
 
 }

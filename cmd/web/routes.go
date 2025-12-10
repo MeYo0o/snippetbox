@@ -3,19 +3,21 @@ package main
 import (
 	"net/http"
 
-	"github.com/MeYo0o/snippetbox/internal/config"
+	"github.com/justinas/alice"
 )
 
-func routes(app *config.Application) *http.ServeMux {
+func (app *Application) routes() http.Handler {
 	mux := http.NewServeMux()
 
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
 	mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
 
-	mux.HandleFunc("GET /{$}", home(app))
-	mux.HandleFunc("GET /snippet/view/{id}", snippetView(app))
+	mux.HandleFunc("GET /{$}", app.home)
+	mux.HandleFunc("GET /snippet/view/{id}", app.snippetView)
 	mux.HandleFunc("GET /snippet/create", snippetCreate)
-	mux.HandleFunc("POST /snippet/create", snippetCreatePost(app))
+	mux.HandleFunc("POST /snippet/create", app.snippetCreatePost)
 
-	return mux
+	standard := alice.New(app.recoverPanic, app.logRequest, commonHeaders)
+
+	return standard.Then(mux)
 }

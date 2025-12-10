@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/MeYo0o/snippetbox/internal/config"
 	"github.com/MeYo0o/snippetbox/internal/models"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -36,7 +35,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	app := &config.Application{
+	app := &Application{
 		Logger:        logger,
 		Snippets:      &models.SnippetModel{DB: db},
 		TemplateCache: templateCache,
@@ -44,7 +43,7 @@ func main() {
 
 	logger.Info("starting server", "addr", *addr)
 
-	err = http.ListenAndServe(*addr, routes(app))
+	err = http.ListenAndServe(*addr, app.routes())
 	logger.Error(err.Error())
 	os.Exit(1)
 }

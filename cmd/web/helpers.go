@@ -16,7 +16,7 @@ func (app *Application) serverError(w http.ResponseWriter, r *http.Request, err 
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
 
-func clientError(w http.ResponseWriter, statusCode int) {
+func (app *Application) clientError(w http.ResponseWriter, statusCode int) {
 	http.Error(w, http.StatusText(statusCode), statusCode)
 }
 

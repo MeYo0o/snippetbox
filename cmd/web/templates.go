@@ -2,6 +2,7 @@ package main
 
 import (
 	"html/template"
+	"net/http"
 	"path/filepath"
 	"time"
 
@@ -54,7 +55,7 @@ func newTemplateCache() (map[string]*template.Template, error) {
 	return cache, nil
 }
 
-func newTemplateData() templateData {
+func (app *Application) newTemplateData(r *http.Request) templateData {
 	return templateData{
 		CurrentYear: time.Now().Year(),
 	}

@@ -6,8 +6,11 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/MeYo0o/snippetbox/internal/models"
+	"github.com/alexedwards/scs/mysqlstore"
+	"github.com/alexedwards/scs/v2"
 	"github.com/go-playground/form/v4"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -30,19 +33,27 @@ func main() {
 	}
 	defer db.Close()
 
+	// Template Cache : for persistent Template File reading
 	templateCache, err := newTemplateCache()
 	if err != nil {
 		logger.Error(err.Error())
 		os.Exit(1)
 	}
 
+	// Form Decoder : for parsing json forms
 	formDecoder := form.NewDecoder()
 
+	// Session Manager
+	sessionManager := scs.New()
+	sessionManager.Store = mysqlstore.New(db)
+	sessionManager.Lifetime = 12 * time.Hour
+
 	app := &Application{
-		Logger:        logger,
-		Snippets:      &models.SnippetModel{DB: db},
-		TemplateCache: templateCache,
-		formDecoder:   formDecoder,
+		Logger:         logger,
+		Snippets:       &models.SnippetModel{DB: db},
+		TemplateCache:  templateCache,
+		formDecoder:    formDecoder,
+		sessionManager: sessionManager,
 	}
 
 	logger.Info("starting server", "addr", *addr)

@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/MeYo0o/snippetbox/internal/models"
+	"github.com/go-playground/form/v4"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -35,10 +36,13 @@ func main() {
 		os.Exit(1)
 	}
 
+	formDecoder := form.NewDecoder()
+
 	app := &Application{
 		Logger:        logger,
 		Snippets:      &models.SnippetModel{DB: db},
 		TemplateCache: templateCache,
+		formDecoder:   formDecoder,
 	}
 
 	logger.Info("starting server", "addr", *addr)

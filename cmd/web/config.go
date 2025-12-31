@@ -16,3 +16,8 @@ type Application struct {
 	formDecoder    *form.Decoder
 	sessionManager *scs.SessionManager
 }
+
+type TLS struct {
+	cert string
+	key  string
+}

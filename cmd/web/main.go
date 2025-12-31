@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"database/sql"
 	"flag"
 	"log/slog"
@@ -47,6 +48,7 @@ func main() {
 	sessionManager := scs.New()
 	sessionManager.Store = mysqlstore.New(db)
 	sessionManager.Lifetime = 12 * time.Hour
+	sessionManager.Cookie.Secure = true
 
 	app := &Application{
 		Logger:         logger,
@@ -58,7 +60,32 @@ func main() {
 
 	logger.Info("starting server", "addr", *addr)
 
-	err = http.ListenAndServe(*addr, app.routes())
+	tlsConfig := &tls.Config{
+		CurvePreferences: []tls.CurveID{
+			tls.X25519,
+			tls.CurveP256,
+		},
+		MinVersion: tls.VersionTLS12,
+	}
+
+	srv := &http.Server{
+		Addr:         *addr,
+		Handler:      app.routes(),
+		ErrorLog:     slog.NewLogLogger(logger.Handler(), slog.LevelError),
+		TLSConfig:    tlsConfig,
+		IdleTimeout:  1 * time.Minute,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+	}
+
+	tls := TLS{
+		key:  "./tls/moaz@innolabs.ai-key.pem",
+		cert: "./tls/moaz@innolabs.ai.pem",
+		// cert: "./tls/cert.pem",
+		// key:  "./tls/key.pem",
+	}
+
+	err = srv.ListenAndServeTLS(tls.cert, tls.key)
 	logger.Error(err.Error())
 	os.Exit(1)
 }

@@ -14,6 +14,7 @@ type templateData struct {
 	Snippet     models.Snippet
 	Snippets    []models.Snippet
 	Form        any
+	Flash       string
 }
 
 var functions = template.FuncMap{
@@ -59,5 +60,6 @@ func newTemplateCache() (map[string]*template.Template, error) {
 func (app *Application) newTemplateData(r *http.Request) templateData {
 	return templateData{
 		CurrentYear: time.Now().Year(),
+		Flash:       app.sessionManager.PopString(r.Context(), "flash"),
 	}
 }

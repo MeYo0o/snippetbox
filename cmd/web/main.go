@@ -22,10 +22,7 @@ func main() {
 	dsn := flag.String("dsn", "web:011000@/snippetbox?parseTime=true", "MySQL datasource name")
 	flag.Parse()
 
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-		AddSource: true,
-		// Level:     slog.LevelDebug,
-	}))
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
 	db, err := openDB(*dsn)
 	if err != nil {
@@ -50,15 +47,15 @@ func main() {
 	sessionManager.Lifetime = 12 * time.Hour
 	sessionManager.Cookie.Secure = true
 
-	app := &Application{
+	app := &application{
 		Logger:         logger,
-		Snippets:       &models.SnippetModel{DB: db},
 		TemplateCache:  templateCache,
 		formDecoder:    formDecoder,
 		sessionManager: sessionManager,
+		// Models initialization
+		snippets: &models.SnippetModel{DB: db},
+		users:    &models.UserModel{DB: db},
 	}
-
-	logger.Info("starting server", "addr", *addr)
 
 	tlsConfig := &tls.Config{
 		CurvePreferences: []tls.CurveID{
@@ -77,6 +74,8 @@ func main() {
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}
+
+	logger.Info("starting server", "addr", *addr)
 
 	tls := TLS{
 		key:  "./tls/moaz@innolabs.ai-key.pem",

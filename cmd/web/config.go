@@ -9,12 +9,14 @@ import (
 	"github.com/go-playground/form/v4"
 )
 
-type Application struct {
+type application struct {
 	Logger         *slog.Logger
-	Snippets       *models.SnippetModel
 	TemplateCache  map[string]*template.Template
 	formDecoder    *form.Decoder
 	sessionManager *scs.SessionManager
+	// models
+	snippets *models.SnippetModel
+	users    *models.UserModel
 }
 
 type TLS struct {

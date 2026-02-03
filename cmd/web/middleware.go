@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -62,6 +63,33 @@ func (app *application) requireAuthentication(next http.Handler) http.Handler {
 
 		w.Header().Add("Cache-Control", "no-store")
 
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (app *application) authenticate(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// check if the session manager contains the "authenticatedUserID" cookie as it's needed for checking user existence
+		id := app.sessionManager.GetInt(r.Context(), "authenticatedUserID")
+		if id == 0 {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		// as we have a valid id, let's call the exists method to check user existence in the database
+		exists, err := app.users.Exists(id)
+		if err != nil {
+			app.serverError(w, r, err)
+			return
+		}
+
+		// if exists, make update the current context with our custom "isAuthenticatedContextKey" to true and update the request with that new copy request containing the updated context
+		if exists {
+			ctx := context.WithValue(r.Context(), isAuthenticatedContextKey, true)
+			r = r.WithContext(ctx)
+		}
+
+		// pass it down to other handlers in the middleware chain
 		next.ServeHTTP(w, r)
 	})
 }

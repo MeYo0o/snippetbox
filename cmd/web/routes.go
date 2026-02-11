@@ -3,14 +3,14 @@ package main
 import (
 	"net/http"
 
+	"github.com/MeYo0o/snippetbox/ui"
 	"github.com/justinas/alice"
 )
 
 func (app *application) routes() http.Handler {
 	mux := http.NewServeMux()
 
-	fileServer := http.FileServer(http.Dir("./ui/static/"))
-	mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
+	mux.Handle("GET /static/", http.FileServerFS(ui.Files))
 
 	// Unprotected application routes using the "dynamic" middleware chain
 	dynamic := alice.New(app.sessionManager.LoadAndSave, preventCSRF, app.authenticate)

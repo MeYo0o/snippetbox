@@ -27,7 +27,11 @@ var functions = template.FuncMap{
 }
 
 func humanDate(t time.Time) string {
-	return t.Format("02 Jan 2006 at 15:04")
+	if t.IsZero() {
+		return ""
+	}
+
+	return t.UTC().Format("02 Jan 2006 at 15:04")
 }
 
 // cache tmpl files so it's not fetched from the File system each time there is a request

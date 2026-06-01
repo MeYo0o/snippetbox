@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
@@ -10,7 +12,14 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func snippetView(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Display a specific snippet..."))
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	resp := fmt.Sprintf("Display a specific snippet with id: (%d)", id)
+	w.Write([]byte(resp))
 }
 
 func snippetCreate(w http.ResponseWriter, r *http.Request) {
@@ -21,8 +30,8 @@ func main() {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/{$}", homeHandler)
-	mux.HandleFunc("/view", snippetView)
-	mux.HandleFunc("/create", snippetCreate)
+	mux.HandleFunc("/snippet/view/{id}", snippetView)
+	mux.HandleFunc("/snippet/create", snippetCreate)
 
 	log.Println("starting the server on :4000")
 

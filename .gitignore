@@ -17,6 +17,7 @@ profile.cov
 # Go workspace files
 go.work
 go.work.sum
+/tmp
 
 # Local environment files containing sensitive credentials
 .env

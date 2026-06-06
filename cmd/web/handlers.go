@@ -2,17 +2,26 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
+
+	"snippetbox.innolabs.ai/components"
 )
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
 	//* priority: first
 	w.Header().Add("Server", "Go")
 	//* priority: second
-	w.WriteHeader(http.StatusOK)
+	// w.WriteHeader(http.StatusOK)
 	//* priority: third
-	w.Write([]byte("Hello from Snippetbox"))
+	// w.Write([]byte("Hello from Snippetbox"))
+
+	err := components.Home().Render(r.Context(), w)
+	if err != nil {
+		log.Println("Home Rendering" + err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+	}
 }
 
 func snippetView(w http.ResponseWriter, r *http.Request) {

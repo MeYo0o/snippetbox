@@ -18,7 +18,10 @@ func main() {
 
 	//> Structured Logger
 	// define the handler
-	loggerHandler := slog.NewTextHandler(os.Stdout, nil)
+	loggerHandler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		AddSource: true,
+		Level:     slog.LevelDebug,
+	})
 	logger := slog.New(loggerHandler)
 
 	// serving static files => css, img, scripts

@@ -2,14 +2,13 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 
 	"snippetbox.innolabs.ai/components"
 )
 
-func homeHandler(w http.ResponseWriter, r *http.Request) {
+func (app *application) homeHandler(w http.ResponseWriter, r *http.Request) {
 	//* priority: first
 	w.Header().Add("Server", "Go")
 	//* priority: second
@@ -19,12 +18,11 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := components.Home().Render(r.Context(), w)
 	if err != nil {
-		log.Println("Home Rendering" + err.Error())
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		app.serverError(w, r, err)
 	}
 }
 
-func snippetView(w http.ResponseWriter, r *http.Request) {
+func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		http.NotFound(w, r)
@@ -34,11 +32,11 @@ func snippetView(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Display a specific snippet with ID %d...", id)
 }
 
-func snippetCreate(w http.ResponseWriter, r *http.Request) {
+func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Display a form for creating a new snippet..."))
 }
 
-func snipperCreatePost(w http.ResponseWriter, r *http.Request) {
+func (app *application) snipperCreatePost(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte("Save a new snippet..."))
 }

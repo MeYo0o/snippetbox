@@ -1,8 +1,10 @@
 package main
 
-import "net/http"
+import (
+	"net/http"
+)
 
-func (app *application) routes() *http.ServeMux {
+func (conf *Config) routes() *http.ServeMux {
 	mux := http.NewServeMux()
 
 	// serving static files => css, img, scripts
@@ -12,10 +14,10 @@ func (app *application) routes() *http.ServeMux {
 	// as short of
 	// mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./ui/static"))))
 
-	mux.HandleFunc("GET /{$}", app.homeHandler)
-	mux.HandleFunc("GET /snippet/view/{id}", app.snippetView)
-	mux.HandleFunc("GET /snippet/create", app.snippetCreate)
-	mux.HandleFunc("POST /snippet/create", app.snipperCreatePost)
+	mux.HandleFunc("GET /{$}", conf.homeHandler)
+	mux.HandleFunc("GET /snippet/view/{id}", conf.snippetView)
+	mux.HandleFunc("GET /snippet/create", conf.snippetCreate)
+	mux.HandleFunc("POST /snippet/create", conf.snipperCreatePost)
 
 	return mux
 }

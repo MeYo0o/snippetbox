@@ -1,11 +1,12 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 
-	"snippetbox.innolabs.ai/components"
+	"snippetbox.innolabs.ai/internal/models"
 )
 
 func (conf *Config) homeHandler(w http.ResponseWriter, r *http.Request) {
@@ -16,9 +17,19 @@ func (conf *Config) homeHandler(w http.ResponseWriter, r *http.Request) {
 	//* priority: third
 	// w.Write([]byte("Hello from Snippetbox"))
 
-	err := components.Home().Render(r.Context(), w)
+	// err := components.Home().Render(r.Context(), w)
+	// if err != nil {
+	// 	conf.serverError(w, r, err)
+	// }
+
+	snippets, err := conf.Snippets.Latest()
 	if err != nil {
 		conf.serverError(w, r, err)
+		return
+	}
+
+	for _, snippet := range snippets {
+		fmt.Fprintf(w, "%+v\n", snippet)
 	}
 }
 
@@ -29,7 +40,17 @@ func (conf *Config) snippetView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, "Display a specific snippet with ID %d...", id)
+	snippet, err := conf.Snippets.Get(int32(id))
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			http.NotFound(w, r)
+		} else {
+			conf.serverError(w, r, err)
+		}
+		return
+	}
+
+	fmt.Fprintf(w, "%+v", snippet)
 }
 
 func (conf *Config) snippetCreate(w http.ResponseWriter, r *http.Request) {

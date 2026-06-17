@@ -33,10 +33,45 @@ func (q *Queries) CreateSnippet(ctx context.Context, arg CreateSnippetParams) (i
 	return id, err
 }
 
+const getLatestSnippets = `-- name: GetLatestSnippets :many
+SELECT id, title, content, created, expires
+FROM snippets
+WHERE expires > NOW()
+ORDER BY id DESC
+LIMIT 10
+`
+
+func (q *Queries) GetLatestSnippets(ctx context.Context) ([]Snippet, error) {
+	rows, err := q.db.Query(ctx, getLatestSnippets)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Snippet
+	for rows.Next() {
+		var i Snippet
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Content,
+			&i.Created,
+			&i.Expires,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getSnippet = `-- name: GetSnippet :one
 SELECT id, title, content, created, expires
 FROM snippets
-WHERE(id = $1)
+WHERE expires > NOW()
+    AND id = $1
 `
 
 func (q *Queries) GetSnippet(ctx context.Context, id int32) (Snippet, error) {

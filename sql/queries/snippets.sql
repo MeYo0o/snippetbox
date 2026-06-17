@@ -10,4 +10,11 @@ RETURNING id;
 -- name: GetSnippet :one
 SELECT *
 FROM snippets
-WHERE(id = $1);
+WHERE expires > NOW()
+    AND id = $1;
+-- name: GetLatestSnippets :many
+SELECT *
+FROM snippets
+WHERE expires > NOW()
+ORDER BY id DESC
+LIMIT 10;

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"snippetbox.innolabs.ai/components"
 	"snippetbox.innolabs.ai/internal/models"
 )
 
@@ -50,7 +51,7 @@ func (conf *Config) snippetView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, "%+v", snippet)
+	components.ViewSnippet(snippet).Render(r.Context(), w)
 }
 
 func (conf *Config) snippetCreate(w http.ResponseWriter, r *http.Request) {

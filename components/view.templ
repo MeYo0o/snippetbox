@@ -15,7 +15,7 @@ templ SnippetBody(snippet models.Snippet) {
 			<strong>{ snippet.Title }</strong>
 			<span>#{ snippet.ID }</span>
 		</div>
-		<pre><code>{ snippet.Content }</code></pre>
+		<pre><code>{ renderContent(snippet.Content) }</code></pre>
 		<div class="metadata">
 			<time>Created: { formateDate(snippet.Created) }</time>
 			<time>Expires: { formateDate(snippet.Expires) }</time>

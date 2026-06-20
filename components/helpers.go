@@ -6,7 +6,7 @@ import (
 )
 
 func formateDate(t time.Time) string {
-	return t.Format("Jan 02, 2006")
+	return t.Format("Jan 02, 2006 at 15:04")
 }
 
 func renderContent(s string) string {

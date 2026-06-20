@@ -38,18 +38,10 @@ func main() {
 	defer pool.Close()
 	queries := database.New(pool)
 
-	// Initialize a new template cache...
-	templateCache, err := newTemplateCache()
-	if err != nil {
-		logger.Error(err.Error())
-		os.Exit(1)
-	}
-
 	//> define application struct that contains dependency injected features
 	conf := &Config{
-		Logger:        logger,
-		Snippets:      &models.SnippetModel{Queries: queries},
-		templateCache: templateCache,
+		Logger:   logger,
+		Snippets: &models.SnippetModel{Queries: queries},
 	}
 
 	logger.Info("starting server", "addr", *addr)

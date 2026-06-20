@@ -29,9 +29,7 @@ func (conf *Config) homeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, snippet := range snippets {
-		fmt.Fprintf(w, "%+v\n", snippet)
-	}
+	components.Home(snippets).Render(r.Context(), w)
 }
 
 func (conf *Config) snippetView(w http.ResponseWriter, r *http.Request) {

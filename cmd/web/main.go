@@ -5,14 +5,16 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"text/template"
 
 	"snippetbox.innolabs.ai/internal/database"
 	"snippetbox.innolabs.ai/internal/models"
 )
 
 type Config struct {
-	Logger   *slog.Logger
-	Snippets *models.SnippetModel
+	Logger        *slog.Logger
+	Snippets      *models.SnippetModel
+	templateCache map[string]*template.Template
 }
 
 func main() {
@@ -36,10 +38,18 @@ func main() {
 	defer pool.Close()
 	queries := database.New(pool)
 
+	// Initialize a new template cache...
+	templateCache, err := newTemplateCache()
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+
 	//> define application struct that contains dependency injected features
 	conf := &Config{
-		Logger:   logger,
-		Snippets: &models.SnippetModel{Queries: queries},
+		Logger:        logger,
+		Snippets:      &models.SnippetModel{Queries: queries},
+		templateCache: templateCache,
 	}
 
 	logger.Info("starting server", "addr", *addr)

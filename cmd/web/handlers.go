@@ -18,18 +18,16 @@ func (conf *Config) homeHandler(w http.ResponseWriter, r *http.Request) {
 	//* priority: third
 	// w.Write([]byte("Hello from Snippetbox"))
 
-	// err := components.Home().Render(r.Context(), w)
-	// if err != nil {
-	// 	conf.serverError(w, r, err)
-	// }
-
 	snippets, err := conf.Snippets.Latest()
 	if err != nil {
 		conf.serverError(w, r, err)
 		return
 	}
 
-	components.Home(snippets).Render(r.Context(), w)
+	err = components.Home(snippets).Render(r.Context(), w)
+	if err != nil {
+		conf.serverError(w, r, err)
+	}
 }
 
 func (conf *Config) snippetView(w http.ResponseWriter, r *http.Request) {
@@ -49,7 +47,10 @@ func (conf *Config) snippetView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	components.ViewSnippet(snippet).Render(r.Context(), w)
+	err = components.ViewSnippet(snippet).Render(r.Context(), w)
+	if err != nil {
+		conf.serverError(w, r, err)
+	}
 }
 
 func (conf *Config) snippetCreate(w http.ResponseWriter, r *http.Request) {

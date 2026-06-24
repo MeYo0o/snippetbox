@@ -20,5 +20,5 @@ func (app *application) routes() http.Handler {
 	mux.HandleFunc("POST /snippet/create", app.snipperCreatePost)
 
 	//* applying middleware
-	return app.LogRequest(commonHeaders(mux))
+	return app.recoverPanic(app.LogRequest(commonHeaders(mux)))
 }

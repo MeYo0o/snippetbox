@@ -5,16 +5,14 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"text/template"
 
 	"snippetbox.innolabs.ai/internal/database"
 	"snippetbox.innolabs.ai/internal/models"
 )
 
 type Config struct {
-	Logger        *slog.Logger
-	Snippets      *models.SnippetModel
-	templateCache map[string]*template.Template
+	Logger   *slog.Logger
+	Snippets *models.SnippetModel
 }
 
 func main() {

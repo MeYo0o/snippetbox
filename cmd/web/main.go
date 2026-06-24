@@ -10,7 +10,7 @@ import (
 	"snippetbox.innolabs.ai/internal/models"
 )
 
-type Config struct {
+type application struct {
 	Logger   *slog.Logger
 	Snippets *models.SnippetModel
 }
@@ -37,14 +37,14 @@ func main() {
 	queries := database.New(pool)
 
 	//> define application struct that contains dependency injected features
-	conf := &Config{
+	app := &application{
 		Logger:   logger,
 		Snippets: &models.SnippetModel{Queries: queries},
 	}
 
 	logger.Info("starting server", "addr", *addr)
 
-	err = http.ListenAndServe(*addr, conf.routes())
+	err = http.ListenAndServe(*addr, app.routes())
 	logger.Error(err.Error())
 	os.Exit(1)
 }

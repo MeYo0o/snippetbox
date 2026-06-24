@@ -10,63 +10,63 @@ import (
 	"snippetbox.innolabs.ai/internal/models"
 )
 
-func (conf *Config) homeHandler(w http.ResponseWriter, r *http.Request) {
+func (app *application) homeHandler(w http.ResponseWriter, r *http.Request) {
 	//* priority: first
-	w.Header().Add("Server", "Go")
+	// w.Header().Add("Server", "Go")
 	//* priority: second
 	// w.WriteHeader(http.StatusOK)
 	//* priority: third
 	// w.Write([]byte("Hello from Snippetbox"))
 
-	snippets, err := conf.Snippets.Latest()
+	snippets, err := app.Snippets.Latest()
 	if err != nil {
-		conf.serverError(w, r, err)
+		app.serverError(w, r, err)
 		return
 	}
 
 	err = components.Home(snippets).Render(r.Context(), w)
 	if err != nil {
-		conf.serverError(w, r, err)
+		app.serverError(w, r, err)
 	}
 }
 
-func (conf *Config) snippetView(w http.ResponseWriter, r *http.Request) {
+func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		http.NotFound(w, r)
 		return
 	}
 
-	snippet, err := conf.Snippets.Get(int32(id))
+	snippet, err := app.Snippets.Get(int32(id))
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
 			http.NotFound(w, r)
 		} else {
-			conf.serverError(w, r, err)
+			app.serverError(w, r, err)
 		}
 		return
 	}
 
 	err = components.ViewSnippet(snippet).Render(r.Context(), w)
 	if err != nil {
-		conf.serverError(w, r, err)
+		app.serverError(w, r, err)
 	}
 }
 
-func (conf *Config) snippetCreate(w http.ResponseWriter, r *http.Request) {
+func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Display a form for creating a new snippet..."))
 }
 
-func (conf *Config) snipperCreatePost(w http.ResponseWriter, r *http.Request) {
+func (app *application) snipperCreatePost(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 
 	title := "O snail"
 	content := "O snail\nClimb Mount Fuji,\nBut slowly, slowly!\n\n– Kobayashi Issa"
 	expires := 7
 
-	id, err := conf.Snippets.Insert(title, content, expires)
+	id, err := app.Snippets.Insert(title, content, expires)
 	if err != nil {
-		conf.serverError(w, r, err)
+		app.serverError(w, r, err)
 		return
 	}
 

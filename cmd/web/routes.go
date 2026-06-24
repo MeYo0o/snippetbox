@@ -4,7 +4,7 @@ import (
 	"net/http"
 )
 
-func (conf *Config) routes() *http.ServeMux {
+func (app *application) routes() http.Handler {
 	mux := http.NewServeMux()
 
 	// serving static files => css, img, scripts
@@ -14,10 +14,11 @@ func (conf *Config) routes() *http.ServeMux {
 	// as short of
 	// mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./ui/static"))))
 
-	mux.HandleFunc("GET /{$}", conf.homeHandler)
-	mux.HandleFunc("GET /snippet/view/{id}", conf.snippetView)
-	mux.HandleFunc("GET /snippet/create", conf.snippetCreate)
-	mux.HandleFunc("POST /snippet/create", conf.snipperCreatePost)
+	mux.HandleFunc("GET /{$}", app.homeHandler)
+	mux.HandleFunc("GET /snippet/view/{id}", app.snippetView)
+	mux.HandleFunc("GET /snippet/create", app.snippetCreate)
+	mux.HandleFunc("POST /snippet/create", app.snipperCreatePost)
 
-	return mux
+	//* applying middleware
+	return app.LogRequest(commonHeaders(mux))
 }

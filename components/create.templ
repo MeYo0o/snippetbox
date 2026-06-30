@@ -1,24 +1,54 @@
 package components
 
-templ CreateSnippet() {
-	@Base("Create a New Snippet", createSnippetBody())
+templ CreateSnippet(form SnippetCreateForm) {
+	@Base("Create a New Snippet", createSnippetBody(form))
 }
 
-templ createSnippetBody() {
+templ createSnippetBody(form SnippetCreateForm) {
 	<form action="/snippet/create" method="POST">
 		<div>
 			<label>Title:</label>
-			<input type="text" name="title"/>
+			if titleErr,ok := form.FieldErrors["title"] ; ok {
+				<label class="error">{ titleErr }</label>
+			}
+			<input type="text" name="title" value={ form.Title }/>
 		</div>
 		<div>
 			<label>Content:</label>
-			<textarea name="content"></textarea>
+			if contentErr , ok := form.FieldErrors["content"];ok {
+				<label class="error">{ contentErr }</label>
+			}
+			<textarea name="content">{ form.Content }</textarea>
 		</div>
 		<div>
 			<label>Delete in:</label>
-			<input type="radio" name="expires" value="365" checked/> One Year
-			<input type="radio" name="expires" value="7"/> One Week
-			<input type="radio" name="expires" value="1"/> One Day
+			if expiresErr , ok := form.FieldErrors["expires"] ; ok {
+				<label class="error">{ expiresErr }</label>
+			}
+			<input
+				type="radio"
+				name="expires"
+				value="365"
+				if form.Expires == 365 {
+					checked
+				}
+			/> One Year
+			<input
+				type="radio"
+				name="expires"
+				value="7"
+				if form.Expires == 7 {
+					checked
+				}
+			/> One Week
+			<input
+				type="radio"
+				name="expires"
+				value="1"
+				if form.Expires == 1 {
+					checked
+				}
+			/> One Day
 		</div>
 		<div>
 			<input type="submit" value="Publish snippet"/>

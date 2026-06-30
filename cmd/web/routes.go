@@ -19,7 +19,7 @@ func (app *application) routes() http.Handler {
 	mux.HandleFunc("GET /{$}", app.homeHandler)
 	mux.HandleFunc("GET /snippet/view/{id}", app.snippetView)
 	mux.HandleFunc("GET /snippet/create", app.snippetCreate)
-	mux.HandleFunc("POST /snippet/create", app.snipperCreatePost)
+	mux.HandleFunc("POST /snippet/create", app.snippetCreatePost)
 
 	standard := alice.New(app.recoverPanic, app.LogRequest, commonHeaders)
 

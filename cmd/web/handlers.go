@@ -58,10 +58,12 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 
-	components.CreateSnippet().Render(r.Context(), w)
+	components.CreateSnippet(components.SnippetCreateForm{
+		Expires: 365,
+	}).Render(r.Context(), w)
 }
 
-func (app *application) snipperCreatePost(w http.ResponseWriter, r *http.Request) {
+func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request) {
 
 	err := r.ParseForm()
 	if err != nil {
@@ -78,28 +80,34 @@ func (app *application) snipperCreatePost(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	fieldErrors := make(map[string]string)
+	form := components.SnippetCreateForm{
+		Title:       title,
+		Content:     content,
+		Expires:     expires,
+		FieldErrors: map[string]string{},
+	}
 
 	if strings.TrimSpace(title) == "" {
-		fieldErrors["title"] = "This field cannot be blank"
+		form.FieldErrors["title"] = "This field cannot be blank"
 	} else if utf8.RuneCountInString(title) > 100 {
-		fieldErrors["title"] = "This field cannot be more than 100 characters long"
+		form.FieldErrors["title"] = "This field cannot be more than 100 characters long"
 	}
 
 	if strings.TrimSpace(content) == "" {
-		fieldErrors["content"] = "This field cannot be blank"
+		form.FieldErrors["content"] = "This field cannot be blank"
 	}
 
 	if expires != 1 && expires != 7 && expires != 365 {
-		fieldErrors["expires"] = "This field must be equal to 1, 7 or 365"
+		form.FieldErrors["expires"] = "This field must be equal to 1, 7 or 365"
 	}
 
-	if len(fieldErrors) > 0 {
-		fmt.Fprintf(w, "%+v\n", fieldErrors)
+	if len(form.FieldErrors) > 0 {
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		components.CreateSnippet(form).Render(r.Context(), w)
 		return
 	}
 
-	id, err := app.Snippets.Insert(title, content, expires)
+	id, err := app.Snippets.Insert(form.Title, form.Content, form.Expires)
 	if err != nil {
 		app.serverError(w, r, err)
 		return

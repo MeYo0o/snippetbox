@@ -6,13 +6,15 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/go-playground/form/v4"
 	"snippetbox.innolabs.ai/internal/database"
 	"snippetbox.innolabs.ai/internal/models"
 )
 
 type application struct {
-	Logger   *slog.Logger
-	Snippets *models.SnippetModel
+	Logger      *slog.Logger
+	Snippets    *models.SnippetModel
+	formDecoder *form.Decoder
 }
 
 func main() {
@@ -36,10 +38,14 @@ func main() {
 	defer pool.Close()
 	queries := database.New(pool)
 
+	//> Form Decoder
+	formDecoder := form.NewDecoder()
+
 	//> define application struct that contains dependency injected features
 	app := &application{
-		Logger:   logger,
-		Snippets: &models.SnippetModel{Queries: queries},
+		Logger:      logger,
+		Snippets:    &models.SnippetModel{Queries: queries},
+		formDecoder: formDecoder,
 	}
 
 	logger.Info("starting server", "addr", *addr)

@@ -1,6 +1,11 @@
 package main
 
-import "net/http"
+import (
+	"errors"
+	"net/http"
+
+	"github.com/go-playground/form/v4"
+)
 
 func (app *application) serverError(w http.ResponseWriter, r *http.Request, err error) {
 	var (
@@ -14,4 +19,22 @@ func (app *application) serverError(w http.ResponseWriter, r *http.Request, err 
 
 func (app *application) clientError(w http.ResponseWriter, status int) {
 	http.Error(w, http.StatusText(status), status)
+}
+
+func (app *application) decodePostForm(r *http.Request, dst any) error {
+	err := r.ParseForm()
+	if err != nil {
+		return err
+	}
+
+	err = app.formDecoder.Decode(dst, r.PostForm)
+	if err != nil {
+		if _, ok := errors.AsType[*form.InvalidDecoderError](err); ok {
+			panic(err)
+		}
+
+		return err
+	}
+
+	return nil
 }

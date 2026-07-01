@@ -64,25 +64,14 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 
 func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request) {
 
-	err := r.ParseForm()
+	// new form entity
+	var form components.SnippetCreateForm
+
+	// this will run a decoder check on the already assigned fields on the SnippetCreateForm struct and will map all values to the struct fields upon successful decode.
+	err := app.decodePostForm(r, &form)
 	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
 		return
-	}
-
-	title := r.PostForm.Get("title")
-	content := r.PostForm.Get("content")
-
-	expires, err := strconv.Atoi(r.PostForm.Get("expires"))
-	if err != nil {
-		app.clientError(w, http.StatusBadRequest)
-		return
-	}
-
-	form := components.SnippetCreateForm{
-		Title:   title,
-		Content: content,
-		Expires: expires,
 	}
 
 	form.CheckField(validator.NotBlank(form.Title), "title", "This field cannot be blank")

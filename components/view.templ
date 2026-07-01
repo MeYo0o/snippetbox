@@ -5,11 +5,14 @@ import (
 	"snippetbox.innolabs.ai/internal/models"
 )
 
-templ ViewSnippet(snippet models.Snippet) {
-	@Base(fmt.Sprint("Snippet #", snippet.ID), SnippetBody(snippet))
+templ ViewSnippet(snippet models.Snippet, flash string) {
+	@Base(fmt.Sprint("Snippet #", snippet.ID), SnippetBody(snippet, flash))
 }
 
-templ SnippetBody(snippet models.Snippet) {
+templ SnippetBody(snippet models.Snippet, flash string) {
+	if len(flash) != 0 {
+		<div class="flash">{ flash }</div>
+	}
 	<div class="snippet">
 		<div class="metadata">
 			<strong>{ snippet.Title }</strong>

@@ -5,16 +5,21 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"time"
 
+	"github.com/alexedwards/scs/postgresstore"
+	"github.com/alexedwards/scs/v2"
 	"github.com/go-playground/form/v4"
+	"github.com/jackc/pgx/v5/stdlib"
 	"snippetbox.innolabs.ai/internal/database"
 	"snippetbox.innolabs.ai/internal/models"
 )
 
 type application struct {
-	Logger      *slog.Logger
-	Snippets    *models.SnippetModel
-	formDecoder *form.Decoder
+	Logger         *slog.Logger
+	Snippets       *models.SnippetModel
+	formDecoder    *form.Decoder
+	sessionManager *scs.SessionManager
 }
 
 func main() {
@@ -38,14 +43,21 @@ func main() {
 	defer pool.Close()
 	queries := database.New(pool)
 
-	//> Form Decoder
+	//> Form Decoder: for Parse Forms and assigning them to the pre-configured fields.
 	formDecoder := form.NewDecoder()
+
+	//> Session Manager
+	sessionDB := stdlib.OpenDBFromPool(pool)
+	sessionManager := scs.New()
+	sessionManager.Store = postgresstore.New(sessionDB)
+	sessionManager.Lifetime = time.Hour * 12
 
 	//> define application struct that contains dependency injected features
 	app := &application{
-		Logger:      logger,
-		Snippets:    &models.SnippetModel{Queries: queries},
-		formDecoder: formDecoder,
+		Logger:         logger,
+		Snippets:       &models.SnippetModel{Queries: queries},
+		formDecoder:    formDecoder,
+		sessionManager: sessionManager,
 	}
 
 	logger.Info("starting server", "addr", *addr)

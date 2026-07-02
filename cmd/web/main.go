@@ -23,10 +23,10 @@ type application struct {
 }
 
 func main() {
-	//>	Commandline Flags
-	// define the flags
+	//> Commandline Flags
 	addr := flag.String("addr", ":4000", "HTTP network address")
-	// initialize parsing them
+	certFile := flag.String("cert-file", "tls/localhost.crt", "HTTPS certificate file")
+	keyFile := flag.String("key-file", "tls/localhost.key", "HTTPS private key file")
 	flag.Parse()
 
 	//> Structured Logger
@@ -68,8 +68,12 @@ func main() {
 	}
 
 	logger.Info("starting server", "addr", *addr)
+	logger.Info("starting server", "certFile", *certFile)
+	logger.Info("starting server", "keyFile", *keyFile)
 
-	err = srv.ListenAndServe()
-	logger.Error(err.Error())
-	os.Exit(1)
+	err = srv.ListenAndServeTLS(*certFile, *keyFile)
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
 }

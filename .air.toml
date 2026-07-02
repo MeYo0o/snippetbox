@@ -4,7 +4,7 @@ tmp_dir = "tmp"
 [build]
   cmd = "go build -o ./tmp/main ./cmd/web"
   bin = "./tmp/main"
-  entrypoint = ["./tmp/main", "-addr", ":80"]
+  entrypoint = ["./tmp/main", "-addr", ":443", "-cert-file", "tls/localhost.crt", "-key-file", "tls/localhost.key"]
   include_ext = ["go", "html", "css", "js", "tmpl", "tpl", "templ"]
   include_dir = ["cmd", "internal", "ui", "config", "models", "components"]
   exclude_dir = ["tmp", "vendor", "testdata"]
@@ -20,7 +20,7 @@ tmp_dir = "tmp"
 [build.windows]
   cmd = "go build -o ./tmp/main.exe ./cmd/web"
   bin = "tmp\\main.exe"
-  entrypoint = ["tmp\\main.exe", "-addr", ":80"]
+  entrypoint = ["tmp\\main.exe", "-addr", ":443", "-cert-file", "tls\\localhost.crt", "-key-file", "tls\\localhost.key"]
 
 [log]
   time = true

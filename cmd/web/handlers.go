@@ -59,9 +59,12 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 
-	components.CreateSnippet(components.SnippetCreateForm{
+	err := components.CreateSnippet(components.SnippetCreateForm{
 		Expires: 365,
 	}).Render(r.Context(), w)
+	if err != nil {
+		app.serverError(w, r, err)
+	}
 }
 
 func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request) {

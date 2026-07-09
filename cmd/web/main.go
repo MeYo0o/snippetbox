@@ -17,8 +17,9 @@ import (
 )
 
 type application struct {
-	Logger         *slog.Logger
-	Snippets       *models.SnippetModel
+	logger         *slog.Logger
+	snippets       *models.SnippetModel
+	user           *models.UserModel
 	formDecoder    *form.Decoder
 	sessionManager *scs.SessionManager
 }
@@ -55,8 +56,9 @@ func main() {
 
 	//> define application struct that contains dependency injected features
 	app := &application{
-		Logger:         logger,
-		Snippets:       &models.SnippetModel{Queries: queries},
+		logger:         logger,
+		snippets:       &models.SnippetModel{Queries: queries},
+		user:           &models.UserModel{Queries: queries},
 		formDecoder:    formDecoder,
 		sessionManager: sessionManager,
 	}

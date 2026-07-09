@@ -19,7 +19,7 @@ func (app *application) homeHandler(w http.ResponseWriter, r *http.Request) {
 	//* priority: third
 	// w.Write([]byte("Hello from Snippetbox"))
 
-	snippets, err := app.Snippets.Latest()
+	snippets, err := app.snippets.Latest()
 	if err != nil {
 		app.serverError(w, r, err)
 		return
@@ -38,7 +38,7 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	snippet, err := app.Snippets.Get(int32(id))
+	snippet, err := app.snippets.Get(int32(id))
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
 			http.NotFound(w, r)
@@ -89,7 +89,7 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	id, err := app.Snippets.Insert(form.Title, form.Content, form.Expires)
+	id, err := app.snippets.Insert(form.Title, form.Content, form.Expires)
 	if err != nil {
 		app.serverError(w, r, err)
 		return

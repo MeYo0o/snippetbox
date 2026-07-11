@@ -3,22 +3,14 @@ package models
 import (
 	"context"
 	"errors"
-	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"golang.org/x/crypto/bcrypt"
 	"snippetbox.innolabs.ai/internal/database"
 )
 
 // ###################### Models ##########################
-type User struct {
-	ID             int
-	Name           string
-	Email          string
-	HashedPassword []byte
-	Created        time.Time
-}
-
 type UserModel struct {
 	Queries *database.Queries
 }
@@ -45,7 +37,25 @@ func (m *UserModel) Insert(name, email, password string) error {
 }
 
 func (m *UserModel) Authenticate(email, password string) (int, error) {
-	return 0, nil
+	dbUser, err := m.Queries.GetUserViaEmail(context.Background(), email)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return 0, ErrInvalidCredentials
+		} else {
+			return 0, err
+		}
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(dbUser.HashedPassword), []byte(password))
+	if err != nil {
+		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
+			return 0, ErrInvalidCredentials
+		}
+		return 0, err
+	}
+
+	return int(dbUser.ID), nil
+
 }
 
 func (m *UserModel) Exists(id int) (bool, error) {

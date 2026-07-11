@@ -1,7 +1,7 @@
 package components
 
-templ Login(form UserLoginForm) {
-	@Base("Login", loginBody(form))
+templ Login(form UserLoginForm, flash string, isAuthenticated bool) {
+	@Base("Login", loginBody(form), flash, isAuthenticated)
 }
 
 templ loginBody(form UserLoginForm) {

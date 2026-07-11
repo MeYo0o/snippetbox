@@ -39,3 +39,15 @@ func (app *application) decodePostForm(r *http.Request, dst any) error {
 
 	return nil
 }
+
+func (app *application) pushFlash(r *http.Request, msg string) {
+	app.sessionManager.Put(r.Context(), "flash", msg)
+}
+
+func (app *application) popFlash(r *http.Request) string {
+	return app.sessionManager.PopString(r.Context(), "flash")
+}
+
+func (app *application) isAuthenticated(r *http.Request) bool {
+	return app.sessionManager.Exists(r.Context(), "authenticatedUserID")
+}

@@ -25,7 +25,7 @@ func (app *application) homeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = components.Home(snippets).Render(r.Context(), w)
+	err = components.Home(snippets, app.popFlash(r), app.isAuthenticated(r)).Render(r.Context(), w)
 	if err != nil {
 		app.serverError(w, r, err)
 	}
@@ -48,9 +48,7 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	flash := app.sessionManager.PopString(r.Context(), "flash")
-
-	err = components.ViewSnippet(snippet, flash).Render(r.Context(), w)
+	err = components.ViewSnippet(snippet, app.popFlash(r), app.isAuthenticated(r)).Render(r.Context(), w)
 	if err != nil {
 		app.serverError(w, r, err)
 	}
@@ -61,7 +59,7 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 
 	err := components.CreateSnippet(components.SnippetCreateForm{
 		Expires: 365,
-	}).Render(r.Context(), w)
+	}, app.popFlash(r), app.isAuthenticated(r)).Render(r.Context(), w)
 	if err != nil {
 		app.serverError(w, r, err)
 	}
@@ -85,7 +83,7 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 	form.CheckField(validator.PermittedValue(form.Expires, 1, 7, 365), "expires", "This field must equal 1, 7 or 365")
 
 	if !form.Valid() {
-		components.CreateSnippet(form).Render(r.Context(), w)
+		components.CreateSnippet(form, app.popFlash(r), app.isAuthenticated(r)).Render(r.Context(), w)
 		return
 	}
 
@@ -95,14 +93,14 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	app.sessionManager.Put(r.Context(), "flash", "Snippet successfully created!")
+	app.pushFlash(r, "Snippet successfully created!")
 
 	http.Redirect(w, r, fmt.Sprintf("/snippet/view/%d", id), http.StatusSeeOther)
 }
 
 func (app *application) userSignup(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
-	components.SignUp(components.UserSignUpForm{}).Render(r.Context(), w)
+	components.SignUp(components.UserSignUpForm{}, app.popFlash(r), app.isAuthenticated(r)).Render(r.Context(), w)
 }
 
 func (app *application) userSignupPost(w http.ResponseWriter, r *http.Request) {
@@ -122,7 +120,7 @@ func (app *application) userSignupPost(w http.ResponseWriter, r *http.Request) {
 	form.CheckField(validator.MaxBytes(form.Password, 72), "password", "This field must not be more than 72 bytes long")
 
 	if !form.Valid() {
-		err := components.SignUp(form).Render(r.Context(), w)
+		err := components.SignUp(form, app.popFlash(r), app.isAuthenticated(r)).Render(r.Context(), w)
 		if err != nil {
 			app.serverError(w, r, err)
 		}
@@ -133,7 +131,7 @@ func (app *application) userSignupPost(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if errors.Is(err, models.ErrDuplicateEmail) {
 			form.AddFieldErrorKey("email", "Email address is already in use")
-			err := components.SignUp(form).Render(r.Context(), w)
+			err := components.SignUp(form, app.popFlash(r), app.isAuthenticated(r)).Render(r.Context(), w)
 			if err != nil {
 				app.serverError(w, r, err)
 			}
@@ -145,13 +143,13 @@ func (app *application) userSignupPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app.sessionManager.Put(r.Context(), "flash", "your signup was successful. please login.")
+	app.pushFlash(r, "your signup was successful. please login.")
 
 	http.Redirect(w, r, "/user/login", http.StatusSeeOther)
 }
 
 func (app *application) userLogin(w http.ResponseWriter, r *http.Request) {
-	err := components.Login(components.UserLoginForm{}).Render(r.Context(), w)
+	err := components.Login(components.UserLoginForm{}, app.popFlash(r), app.isAuthenticated(r)).Render(r.Context(), w)
 	if err != nil {
 		app.serverError(w, r, err)
 	}
@@ -172,7 +170,7 @@ func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
 	form.CheckField(validator.MaxBytes(form.Password, 72), "password", "This field must not be more than 72 bytes long")
 
 	if !form.Valid() {
-		err := components.Login(form).Render(r.Context(), w)
+		err := components.Login(form, app.popFlash(r), app.isAuthenticated(r)).Render(r.Context(), w)
 		if err != nil {
 			app.serverError(w, r, err)
 		}
@@ -183,7 +181,7 @@ func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if errors.Is(err, models.ErrInvalidCredentials) {
 			form.AddNonFieldError("Email or password is incorrect")
-			err = components.Login(form).Render(r.Context(), w)
+			err = components.Login(form, app.popFlash(r), app.isAuthenticated(r)).Render(r.Context(), w)
 			if err != nil {
 				app.serverError(w, r, err)
 			}
@@ -205,5 +203,17 @@ func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) userLogoutPost(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Logout the user...")
+
+	err := app.sessionManager.RenewToken(r.Context())
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+
+	app.sessionManager.Remove(r.Context(), "authenticatedUserID")
+
+	app.pushFlash(r, "You've been logged out successfully!")
+
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+
 }

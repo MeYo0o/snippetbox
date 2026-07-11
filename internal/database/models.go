@@ -6,7 +6,15 @@ package database
 
 import (
 	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+type Session struct {
+	Token  string
+	Data   []byte
+	Expiry pgtype.Timestamp
+}
 
 type Snippet struct {
 	ID      int32
@@ -14,4 +22,12 @@ type Snippet struct {
 	Content string
 	Created time.Time
 	Expires time.Time
+}
+
+type User struct {
+	ID             int32
+	Name           string
+	Email          string
+	HashedPassword string
+	Created        time.Time
 }

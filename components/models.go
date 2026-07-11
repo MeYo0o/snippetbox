@@ -8,3 +8,10 @@ type SnippetCreateForm struct {
 	Expires             int    `form:"expires"`
 	validator.Validator `form:"-"`
 }
+
+type UserSignUpForm struct {
+	Name                string `form:"name"`
+	Email               string `form:"email"`
+	Password            string `form:"password"`
+	validator.Validator `form:"-"`
+}

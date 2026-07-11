@@ -19,7 +19,7 @@ import (
 type application struct {
 	logger         *slog.Logger
 	snippets       *models.SnippetModel
-	user           *models.UserModel
+	users          *models.UserModel
 	formDecoder    *form.Decoder
 	sessionManager *scs.SessionManager
 }
@@ -58,7 +58,7 @@ func main() {
 	app := &application{
 		logger:         logger,
 		snippets:       &models.SnippetModel{Queries: queries},
-		user:           &models.UserModel{Queries: queries},
+		users:          &models.UserModel{Queries: queries},
 		formDecoder:    formDecoder,
 		sessionManager: sessionManager,
 	}

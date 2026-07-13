@@ -25,7 +25,7 @@ func (app *application) homeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = components.Home(snippets, app.popFlash(r), app.isAuthenticated(r)).Render(r.Context(), w)
+	err = components.Home(snippets, app.newTemplateData(r)).Render(r.Context(), w)
 	if err != nil {
 		app.serverError(w, r, err)
 	}
@@ -48,7 +48,7 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = components.ViewSnippet(snippet, app.popFlash(r), app.isAuthenticated(r)).Render(r.Context(), w)
+	err = components.ViewSnippet(snippet, app.newTemplateData(r)).Render(r.Context(), w)
 	if err != nil {
 		app.serverError(w, r, err)
 	}
@@ -59,7 +59,7 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 
 	err := components.CreateSnippet(components.SnippetCreateForm{
 		Expires: 365,
-	}, app.popFlash(r), app.isAuthenticated(r)).Render(r.Context(), w)
+	}, app.newTemplateData(r)).Render(r.Context(), w)
 	if err != nil {
 		app.serverError(w, r, err)
 	}
@@ -83,7 +83,7 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 	form.CheckField(validator.PermittedValue(form.Expires, 1, 7, 365), "expires", "This field must equal 1, 7 or 365")
 
 	if !form.Valid() {
-		components.CreateSnippet(form, app.popFlash(r), app.isAuthenticated(r)).Render(r.Context(), w)
+		components.CreateSnippet(form, app.newTemplateData(r)).Render(r.Context(), w)
 		return
 	}
 
@@ -100,7 +100,7 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 
 func (app *application) userSignup(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
-	components.SignUp(components.UserSignUpForm{}, app.popFlash(r), app.isAuthenticated(r)).Render(r.Context(), w)
+	components.SignUp(components.UserSignUpForm{}, app.newTemplateData(r)).Render(r.Context(), w)
 }
 
 func (app *application) userSignupPost(w http.ResponseWriter, r *http.Request) {
@@ -120,7 +120,7 @@ func (app *application) userSignupPost(w http.ResponseWriter, r *http.Request) {
 	form.CheckField(validator.MaxBytes(form.Password, 72), "password", "This field must not be more than 72 bytes long")
 
 	if !form.Valid() {
-		err := components.SignUp(form, app.popFlash(r), app.isAuthenticated(r)).Render(r.Context(), w)
+		err := components.SignUp(form, app.newTemplateData(r)).Render(r.Context(), w)
 		if err != nil {
 			app.serverError(w, r, err)
 		}
@@ -131,7 +131,7 @@ func (app *application) userSignupPost(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if errors.Is(err, models.ErrDuplicateEmail) {
 			form.AddFieldErrorKey("email", "Email address is already in use")
-			err := components.SignUp(form, app.popFlash(r), app.isAuthenticated(r)).Render(r.Context(), w)
+			err := components.SignUp(form, app.newTemplateData(r)).Render(r.Context(), w)
 			if err != nil {
 				app.serverError(w, r, err)
 			}
@@ -149,7 +149,7 @@ func (app *application) userSignupPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) userLogin(w http.ResponseWriter, r *http.Request) {
-	err := components.Login(components.UserLoginForm{}, app.popFlash(r), app.isAuthenticated(r)).Render(r.Context(), w)
+	err := components.Login(components.UserLoginForm{}, app.newTemplateData(r)).Render(r.Context(), w)
 	if err != nil {
 		app.serverError(w, r, err)
 	}
@@ -170,7 +170,7 @@ func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
 	form.CheckField(validator.MaxBytes(form.Password, 72), "password", "This field must not be more than 72 bytes long")
 
 	if !form.Valid() {
-		err := components.Login(form, app.popFlash(r), app.isAuthenticated(r)).Render(r.Context(), w)
+		err := components.Login(form, app.newTemplateData(r)).Render(r.Context(), w)
 		if err != nil {
 			app.serverError(w, r, err)
 		}
@@ -181,7 +181,7 @@ func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if errors.Is(err, models.ErrInvalidCredentials) {
 			form.AddNonFieldError("Email or password is incorrect")
-			err = components.Login(form, app.popFlash(r), app.isAuthenticated(r)).Render(r.Context(), w)
+			err = components.Login(form, app.newTemplateData(r)).Render(r.Context(), w)
 			if err != nil {
 				app.serverError(w, r, err)
 			}

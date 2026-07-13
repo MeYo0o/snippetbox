@@ -1,11 +1,12 @@
 package components
 
-templ SignUp(form UserSignUpForm, flash string, isAuthenticated bool) {
-	@Base("Signup", signUpBody(form), flash, isAuthenticated)
+templ SignUp(form UserSignUpForm, templateData TemplateData) {
+	@Base("Signup", signUpBody(form, templateData.CSRFToken), templateData)
 }
 
-templ signUpBody(form UserSignUpForm) {
+templ signUpBody(form UserSignUpForm, csrfToken string) {
 	<form action="/user/signup" method="POST" novalidate>
+		<input type="hidden" name="csrf_token" value={ csrfToken }/>
 		<div>
 			<label>Name:</label>
 			if nameErr,ok := form.FieldErrors["name"] ; ok {

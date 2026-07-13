@@ -4,7 +4,7 @@ import "time"
 
 var currentYear = time.Now().Year()
 
-templ Base(title string, main templ.Component, flash string, isAuthenticated bool) {
+templ Base(title string, main templ.Component, templateData TemplateData) {
 	<!DOCTYPE html>
 	<html lang="en">
 		<head>
@@ -20,10 +20,10 @@ templ Base(title string, main templ.Component, flash string, isAuthenticated boo
 			<header>
 				<h1><a href="/">Snippetbox</a></h1>
 			</header>
-			@Nav(isAuthenticated)
+			@Nav(templateData.IsAuthenticated, templateData.CSRFToken)
 			<main>
-				if len(flash) != 0 {
-					<div class="flash">{ flash }</div>
+				if len(templateData.Flash) != 0 {
+					<div class="flash">{ templateData.Flash }</div>
 				}
 				@main
 			</main>

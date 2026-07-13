@@ -5,8 +5,8 @@ import (
 	"snippetbox.innolabs.ai/internal/models"
 )
 
-templ ViewSnippet(snippet models.Snippet, flash string, isAuthenticated bool) {
-	@Base(fmt.Sprint("Snippet #", snippet.ID), SnippetBody(snippet), flash, isAuthenticated)
+templ ViewSnippet(snippet models.Snippet, templateData TemplateData) {
+	@Base(fmt.Sprint("Snippet #", snippet.ID), SnippetBody(snippet), templateData)
 }
 
 templ SnippetBody(snippet models.Snippet) {

@@ -5,8 +5,8 @@ import (
 	"snippetbox.innolabs.ai/internal/models"
 )
 
-templ Home(snippets []models.Snippet, flash string, isAuthenticated bool) {
-	@Base("Home", HomeBody(snippets), flash, isAuthenticated)
+templ Home(snippets []models.Snippet, templateData TemplateData) {
+	@Base("Home", HomeBody(snippets), templateData)
 }
 
 templ HomeBody(snippets []models.Snippet) {

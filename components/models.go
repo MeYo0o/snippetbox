@@ -2,6 +2,12 @@ package components
 
 import "snippetbox.innolabs.ai/internal/validator"
 
+type TemplateData struct {
+	Flash           string
+	IsAuthenticated bool
+	CSRFToken       string
+}
+
 type SnippetCreateForm struct {
 	Title               string `form:"title"`
 	Content             string `form:"content"`

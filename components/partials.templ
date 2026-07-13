@@ -1,6 +1,6 @@
 package components
 
-templ Nav(isAuthenticated bool) {
+templ Nav(isAuthenticated bool, csrfToken string) {
 	<nav>
 		<div>
 			<a href="/">Home</a>
@@ -11,6 +11,7 @@ templ Nav(isAuthenticated bool) {
 		<div>
 			if isAuthenticated {
 				<form action="/user/logout" method="post">
+					<input type="hidden" name="csrf_token" value={ csrfToken }/>
 					<button>Logout</button>
 				</form>
 			} else {

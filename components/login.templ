@@ -1,11 +1,12 @@
 package components
 
-templ Login(form UserLoginForm, flash string, isAuthenticated bool) {
-	@Base("Login", loginBody(form), flash, isAuthenticated)
+templ Login(form UserLoginForm, templateData TemplateData) {
+	@Base("Login", loginBody(form, templateData.CSRFToken), templateData)
 }
 
-templ loginBody(form UserLoginForm) {
+templ loginBody(form UserLoginForm, csrfToken string) {
 	<form action="/user/login" method="POST" novalidate>
+		<input type="hidden" name="csrf_token" value={ csrfToken }/>
 		for _, err := range form.NonFieldErrors {
 			<div class="error">{ err }</div>
 		}

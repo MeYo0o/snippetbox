@@ -4,17 +4,21 @@ import (
 	"net/http"
 
 	"github.com/justinas/alice"
+	"snippetbox.innolabs.ai/ui"
 )
 
 func (app *application) routes() http.Handler {
 	mux := http.NewServeMux()
 
 	// serving static files => css, img, scripts
-	fileServer := http.FileServer(http.Dir("./ui/static"))
+	// fileServer := http.FileServer(http.Dir("./ui/static"))
 	// stripping it from the "static" prefix before it reaches the server
-	mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
+	// mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
 	// as short of
 	// mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./ui/static"))))
+
+	//After Embedding
+	mux.Handle("GET /static/", http.FileServerFS(ui.Files))
 
 	dynamic := alice.New(app.sessionManager.LoadAndSave, preventCSRF, app.authenticate)
 	mux.Handle("GET /{$}", dynamic.ThenFunc(app.homeHandler))

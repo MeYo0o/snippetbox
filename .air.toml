@@ -4,8 +4,9 @@ tmp_dir = "tmp"
 [build]
   cmd = "go build -o ./tmp/main ./cmd/web"
   bin = "./tmp/main"
-  include_ext = ["go", "html", "css", "js", "tmpl", "tpl"]
-  include_dir = ["cmd", "internal", "ui", "config", "models"]
+  entrypoint = ["./tmp/main", "-addr", ":443", "-cert-file", "tls/localhost.crt", "-key-file", "tls/localhost.key"]
+  include_ext = ["go", "html", "css", "js", "tmpl", "tpl", "templ"]
+  include_dir = ["cmd", "internal", "ui", "config", "models", "components"]
   exclude_dir = ["tmp", "vendor", "testdata"]
   exclude_regex = ["_test\\.go", "_mock\\.go"]
   delay = 1000
@@ -14,6 +15,12 @@ tmp_dir = "tmp"
   kill_delay = 500
   rerun = false
   rerun_delay = 500
+
+# Platform-specific build overrides
+[build.windows]
+  cmd = "go build -o ./tmp/main.exe ./cmd/web"
+  bin = "tmp\\main.exe"
+  entrypoint = ["tmp\\main.exe", "-addr", ":443", "-cert-file", "tls\\localhost.crt", "-key-file", "tls\\localhost.key"]
 
 [log]
   time = true

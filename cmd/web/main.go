@@ -2,104 +2,89 @@ package main
 
 import (
 	"crypto/tls"
-	"database/sql"
 	"flag"
 	"log/slog"
 	"net/http"
 	"os"
 	"time"
 
-	"github.com/MeYo0o/snippetbox/internal/models"
-	"github.com/alexedwards/scs/mysqlstore"
+	"github.com/alexedwards/scs/postgresstore"
 	"github.com/alexedwards/scs/v2"
 	"github.com/go-playground/form/v4"
-
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/jackc/pgx/v5/stdlib"
+	"snippetbox.innolabs.ai/internal/database"
+	"snippetbox.innolabs.ai/internal/models"
 )
 
+type application struct {
+	logger         *slog.Logger
+	snippets       *models.SnippetModel
+	users          *models.UserModel
+	formDecoder    *form.Decoder
+	sessionManager *scs.SessionManager
+}
+
 func main() {
+	//> Commandline Flags
 	addr := flag.String("addr", ":4000", "HTTP network address")
-	dsn := flag.String("dsn", "web:011000@/snippetbox?parseTime=true", "MySQL datasource name")
+	certFile := flag.String("cert-file", "tls/localhost.crt", "HTTPS certificate file")
+	keyFile := flag.String("key-file", "tls/localhost.key", "HTTPS private key file")
 	flag.Parse()
 
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	//> Structured Logger
+	// define the handler
+	loggerHandler := slog.NewTextHandler(os.Stdout, nil)
+	// initialize the logger
+	logger := slog.New(loggerHandler)
 
-	db, err := openDB(*dsn)
+	//> Database Setup
+	pool, err := setupDB(logger)
 	if err != nil {
-		logger.Error(err.Error())
 		os.Exit(1)
 	}
-	defer db.Close()
+	defer pool.Close()
+	queries := database.New(pool)
 
-	// Template Cache : for persistent Template File reading
-	templateCache, err := newTemplateCache()
-	if err != nil {
-		logger.Error(err.Error())
-		os.Exit(1)
-	}
-
-	// Form Decoder : for parsing json forms
+	//> Form Decoder: for Parse Forms and assigning them to the pre-configured fields.
 	formDecoder := form.NewDecoder()
 
-	// Session Manager
+	//> Session Manager
+	sessionDB := stdlib.OpenDBFromPool(pool)
 	sessionManager := scs.New()
-	sessionManager.Store = mysqlstore.New(db)
-	sessionManager.Lifetime = 12 * time.Hour
-	sessionManager.Cookie.Secure = true
+	sessionManager.Store = postgresstore.New(sessionDB)
+	sessionManager.Lifetime = time.Hour * 12
 
+	//> define application struct that contains dependency injected features
 	app := &application{
-		Logger:         logger,
-		TemplateCache:  templateCache,
+		logger:         logger,
+		snippets:       &models.SnippetModel{Queries: queries},
+		users:          &models.UserModel{Queries: queries},
 		formDecoder:    formDecoder,
 		sessionManager: sessionManager,
-		// Models initialization
-		snippets: &models.SnippetModel{DB: db},
-		users:    &models.UserModel{DB: db},
 	}
 
-	tlsConfig := &tls.Config{
-		CurvePreferences: []tls.CurveID{
-			tls.X25519,
-			tls.CurveP256,
-		},
-		MinVersion: tls.VersionTLS12,
-	}
-
+	//> Server Configuration
 	srv := &http.Server{
-		Addr:         *addr,
-		Handler:      app.routes(),
-		ErrorLog:     slog.NewLogLogger(logger.Handler(), slog.LevelError),
-		TLSConfig:    tlsConfig,
+		Addr:     *addr,
+		Handler:  app.routes(),
+		ErrorLog: slog.NewLogLogger(logger.Handler(), slog.LevelError),
+		TLSConfig: &tls.Config{
+			CurvePreferences: []tls.CurveID{
+				tls.X25519, tls.CurveP256,
+			},
+		},
 		IdleTimeout:  1 * time.Minute,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}
 
 	logger.Info("starting server", "addr", *addr)
+	logger.Info("starting server", "certFile", *certFile)
+	logger.Info("starting server", "keyFile", *keyFile)
 
-	tls := TLS{
-		key:  "./tls/moaz@innolabs.ai-key.pem",
-		cert: "./tls/moaz@innolabs.ai.pem",
-		// cert: "./tls/cert.pem",
-		// key:  "./tls/key.pem",
-	}
-
-	err = srv.ListenAndServeTLS(tls.cert, tls.key)
-	logger.Error(err.Error())
-	os.Exit(1)
-}
-
-func openDB(dsn string) (*sql.DB, error) {
-	db, err := sql.Open("mysql", dsn)
+	err = srv.ListenAndServeTLS(*certFile, *keyFile)
 	if err != nil {
-		return nil, err
+		logger.Error(err.Error())
+		os.Exit(1)
 	}
-
-	err = db.Ping()
-	if err != nil {
-		db.Close()
-		return nil, err
-	}
-
-	return db, nil
 }

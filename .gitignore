@@ -1,4 +1,37 @@
-tmp/build-errors.log
-air.toml
-tmp/main
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binaries (built via 'go test -c')
+*.test
+
+# Code coverage profiles and test artifacts
+*.out
+*.coverprofile
+coverage.*
+profile.cov
+
+# Go workspace files
+go.work
+go.work.sum
+/tmp
+
+# Local environment files containing sensitive credentials
+.env
+.env.*
+!.env.example
+
+# Certificates
 tls/
+
+# Common local IDEs and text editors
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp

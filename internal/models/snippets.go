@@ -1,13 +1,17 @@
 package models
 
 import (
-	"database/sql"
+	"context"
 	"errors"
 	"time"
+
+	"github.com/jackc/pgx/v5"
+	"snippetbox.innolabs.ai/internal/database"
 )
 
+// ###################### Models ##########################
 type Snippet struct {
-	ID      int
+	ID      int32
 	Title   string
 	Content string
 	Created time.Time
@@ -15,72 +19,48 @@ type Snippet struct {
 }
 
 type SnippetModel struct {
-	DB *sql.DB
+	Queries *database.Queries
 }
 
-func (m *SnippetModel) Insert(title, content string, expires int) (int, error) {
-	stmt := `INSERT INTO snippets(title, content, created, expires)
-	VALUES(?, ?, UTC_TIMESTAMP(), DATE_ADD(UTC_TIMESTAMP, INTERVAL ? DAY))`
+// ###################### DB ##########################
+func (m *SnippetModel) Insert(title, content string, expires int) (int32, error) {
+	return m.Queries.CreateSnippet(context.Background(), database.CreateSnippetParams{
+		Title:   title,
+		Content: content,
+		Column3: expires,
+	})
 
-	result, err := m.DB.Exec(stmt, title, content, expires)
-	if err != nil {
-		return 0, err
-	}
-
-	id, err := result.LastInsertId()
-	if err != nil {
-		return 0, err
-	}
-
-	return int(id), nil
 }
 
-func (m *SnippetModel) Get(id int) (Snippet, error) {
-	var snippet Snippet
-
-	stmt := `SELECT id, title, content, created, expires FROM snippets
-	WHERE expires > UTC_TIMESTAMP() AND id = ?`
-
-	if err := m.DB.QueryRow(stmt, id).Scan(&snippet.ID, &snippet.Title, &snippet.Content, &snippet.Created, &snippet.Expires); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+func (m *SnippetModel) Get(id int32) (Snippet, error) {
+	dbSnippet, err := m.Queries.GetSnippet(context.Background(), id)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return Snippet{}, ErrNoRecord
 		} else {
-			return Snippet{}, nil
+			return Snippet{}, err
 		}
 	}
 
-	return snippet, nil
+	return Snippet(dbSnippet), nil
 }
 
 func (m *SnippetModel) Latest() ([]Snippet, error) {
-	stmt := `SELECT id, title, content, created, expires FROM snippets
-	WHERE expires > UTC_TIMESTAMP()
-	ORDER BY id DESC
-	LIMIT 10`
-
-	rows, err := m.DB.Query(stmt)
+	dbSnippets, err := m.Queries.GetLatestSnippets(context.Background())
 	if err != nil {
 		return nil, err
 	}
 
-	defer rows.Close()
+	return dbSnippetsToSnippets(dbSnippets), nil
+}
 
-	var snippets []Snippet
+// #################### Helpers #######################
+func dbSnippetsToSnippets(dbSnippets []database.Snippet) []Snippet {
+	snippets := make([]Snippet, len(dbSnippets))
 
-	for rows.Next() {
-		var s Snippet
-
-		err = rows.Scan(&s.ID, &s.Title, &s.Content, &s.Created, &s.Expires)
-		if err != nil {
-			return nil, err
-		}
-
-		snippets = append(snippets, s)
+	for i, dbSnippet := range dbSnippets {
+		snippets[i] = Snippet(dbSnippet)
 	}
 
-	if err = rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return snippets, nil
+	return snippets
 }

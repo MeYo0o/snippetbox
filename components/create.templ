@@ -1,0 +1,58 @@
+package components
+
+templ CreateSnippet(form SnippetCreateForm, templateData TemplateData) {
+	@Base("Create a New Snippet", createSnippetBody(form, templateData.CSRFToken), templateData)
+}
+
+templ createSnippetBody(form SnippetCreateForm, csrfToken string) {
+	<form action="/snippet/create" method="POST">
+		<input type="hidden" name="csrf_token" value={ csrfToken }/>
+		<div>
+			<label>Title:</label>
+			if titleErr,ok := form.FieldErrors["title"] ; ok {
+				<label class="error">{ titleErr }</label>
+			}
+			<input type="text" name="title" value={ form.Title }/>
+		</div>
+		<div>
+			<label>Content:</label>
+			if contentErr , ok := form.FieldErrors["content"];ok {
+				<label class="error">{ contentErr }</label>
+			}
+			<textarea name="content">{ form.Content }</textarea>
+		</div>
+		<div>
+			<label>Delete in:</label>
+			if expiresErr , ok := form.FieldErrors["expires"] ; ok {
+				<label class="error">{ expiresErr }</label>
+			}
+			<input
+				type="radio"
+				name="expires"
+				value="365"
+				if form.Expires == 365 {
+					checked
+				}
+			/> One Year
+			<input
+				type="radio"
+				name="expires"
+				value="7"
+				if form.Expires == 7 {
+					checked
+				}
+			/> One Week
+			<input
+				type="radio"
+				name="expires"
+				value="1"
+				if form.Expires == 1 {
+					checked
+				}
+			/> One Day
+		</div>
+		<div>
+			<input type="submit" value="Publish snippet"/>
+		</div>
+	</form>
+}

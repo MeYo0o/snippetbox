@@ -3,19 +3,25 @@ package main
 import (
 	"net/http"
 
-	"github.com/MeYo0o/snippetbox/ui"
 	"github.com/justinas/alice"
+	"snippetbox.innolabs.ai/ui"
 )
 
 func (app *application) routes() http.Handler {
 	mux := http.NewServeMux()
 
+	// serving static files => css, img, scripts
+	// fileServer := http.FileServer(http.Dir("./ui/static"))
+	// stripping it from the "static" prefix before it reaches the server
+	// mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
+	// as short of
+	// mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./ui/static"))))
+
+	//After Embedding
 	mux.Handle("GET /static/", http.FileServerFS(ui.Files))
 
-	// Unprotected application routes using the "dynamic" middleware chain
 	dynamic := alice.New(app.sessionManager.LoadAndSave, preventCSRF, app.authenticate)
-
-	mux.Handle("GET /{$}", dynamic.ThenFunc(app.home))
+	mux.Handle("GET /{$}", dynamic.ThenFunc(app.homeHandler))
 	mux.Handle("GET /snippet/view/{id}", dynamic.ThenFunc(app.snippetView))
 	mux.Handle("GET /user/signup", dynamic.ThenFunc(app.userSignup))
 	mux.Handle("POST /user/signup", dynamic.ThenFunc(app.userSignupPost))
@@ -23,12 +29,12 @@ func (app *application) routes() http.Handler {
 	mux.Handle("POST /user/login", dynamic.ThenFunc(app.userLoginPost))
 
 	protected := dynamic.Append(app.requireAuthentication)
-
 	mux.Handle("GET /snippet/create", protected.ThenFunc(app.snippetCreate))
 	mux.Handle("POST /snippet/create", protected.ThenFunc(app.snippetCreatePost))
 	mux.Handle("POST /user/logout", protected.ThenFunc(app.userLogoutPost))
 
-	standard := alice.New(app.recoverPanic, app.logRequest, commonHeaders)
+	standard := alice.New(app.recoverPanic, app.LogRequest, commonHeaders)
 
+	//* applying middleware
 	return standard.Then(mux)
 }

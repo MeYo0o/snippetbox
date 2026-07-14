@@ -1,0 +1,33 @@
+package components
+
+import (
+	"fmt"
+	"snippetbox.innolabs.ai/internal/models"
+)
+
+templ Home(snippets []models.Snippet, templateData TemplateData) {
+	@Base("Home", HomeBody(snippets), templateData)
+}
+
+templ HomeBody(snippets []models.Snippet) {
+	<h2>Latest Snippets</h2>
+	if  len(snippets)!=0 {
+		<table>
+			<tr>
+				<th>Title</th>
+				<th>Created</th>
+				<th>ID</th>
+			</tr>
+			for _,snippet := range snippets {
+				{{ link := templ.URL(fmt.Sprintf("/snippet/view/%d", snippet.ID)) }}
+				<tr>
+					<th><a href={ link }>{ snippet.Title }</a></th>
+					<th>{ formateDate(snippet.Created) }</th>
+					<th>#{ snippet.ID }</th>
+				</tr>
+			}
+		</table>
+	} else {
+		<p>"There's nothing to see here... yet!"</p>
+	}
+}

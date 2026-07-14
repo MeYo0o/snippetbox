@@ -43,3 +43,18 @@ func (q *Queries) GetUserViaEmail(ctx context.Context, email string) (GetUserVia
 	err := row.Scan(&i.ID, &i.HashedPassword)
 	return i, err
 }
+
+const userExists = `-- name: UserExists :one
+SELECT EXISTS(
+        SELECT true
+        FROM users
+        WHERE id = $1
+    )
+`
+
+func (q *Queries) UserExists(ctx context.Context, id int32) (bool, error) {
+	row := q.db.QueryRow(ctx, userExists, id)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}

@@ -6,3 +6,9 @@ SELECT id,
     hashed_password
 FROM users
 WHERE email = $1;
+-- name: UserExists :one
+SELECT EXISTS(
+        SELECT true
+        FROM users
+        WHERE id = $1
+    );
